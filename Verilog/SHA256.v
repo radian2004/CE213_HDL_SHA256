@@ -40,31 +40,11 @@
 *  data: .........a0..b0..c0..d0..e0..| |.....a1..b1..| |......H0..H1..
 *  eoc:  _____________________________| |--___________| |__------------
 */
-
-`include "ror.v"
-`include "shr.v"
-`include "add2.v"
-`include "add3.v"
-`include "add4.v"
-`include "add5.v"
-`include "choice.v"
-`include "majority.v"
-
-`include "usigma0.v"
-`include "usigma1.v"
-`include "lsigma0.v"
-`include "lsigma1.v"
-`include "wvar.v"
-
-`include "counter.v"
-`include "constants.v"
-`include "expansion.v"
-`include "compression.v"
-
-module SHA256(data, eoc, clk, rst, soc, rd);
+module SHA256(idata, odata, eoc, clk, rst, soc, rd, hash);
 
 	input  clk, rst, soc, rd;
-	inout  [31:0] data;
+	input  [31:0] idata;
+	output  [31:0] odata;
 	output eoc;
 
 	// Internal control signals:
@@ -76,9 +56,9 @@ module SHA256(data, eoc, clk, rst, soc, rd);
 	assign ird = rd & ieoc;
 
 	// Bidirectional bus:
-	wire [31:0] idata, odata;
-	assign idata = data;
-	assign data  = (ird)  ? odata : 32'bz;
+	//wire [31:0] idata, odata;
+	//assign idata = data;
+	//assign data  = (ird)  ? odata : 32'bz;
 
 	// Counter sub-module:
 	wire sel;
@@ -96,7 +76,7 @@ module SHA256(data, eoc, clk, rst, soc, rd);
 	expansion u2(msg, idata, clk, sel);
 
 	// Compression sub-module:
-	wire [255:0] hash;
+	output wire [255:0] hash;
 	compression u3(hash, msg, k, clk, rst_n, soc, ieoc);
 
 	// Output MUX:
@@ -117,6 +97,6 @@ module SHA256(data, eoc, clk, rst, soc, rd);
 		endcase
 	end
 
-	assign odata = mux_out;
+	assign odata =(ird) ? mux_out : 32'bz;
 
 endmodule

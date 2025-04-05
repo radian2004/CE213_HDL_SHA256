@@ -16,15 +16,13 @@
 
 `define NULL 0
 `timescale 1ns / 1ps	//!< <time unit> / <time precision>
-
-`include "SHA256.v"
-
 module SHA256_testbench();
 
 	// DUT:
-	wire [31:0] wdata;
+	wire [31:0] widata, wodata;
 	wire weoc, wclk, wrst, wsoc, wrd;
-	SHA256 dut(wdata, weoc, wclk, wrst, wsoc, wrd);
+	wire [255:0] whash;
+	SHA256 dut(widata, wodata, weoc, wclk, wrst, wsoc, wrd, whash);
 
 	// TestBench:
 	integer file;
@@ -33,7 +31,7 @@ module SHA256_testbench();
 	reg [31:0] rdata, hash;
 	reg rclk, rrst, rsoc, rrd;
 
-	assign wdata = rdata;
+	assign widata = rdata;
 	assign wclk = rclk;
 	assign wrst = rrst;
 	assign wsoc = rsoc;
@@ -44,12 +42,14 @@ module SHA256_testbench();
 
 		file = $fopen("tb_data.txt", "r");
 		
-		if(file == `NULL) begin
+		if(file == `NULL) 
+		begin
     		$display("OPEN FILE ERROR");
     		$finish;
   		end
 
-		if($fscanf(file, "msg_blocks=%d\n", msg_blocks) == -1) begin
+		if($fscanf(file, "msg_blocks=%d\n", msg_blocks) == -1) 
+		begin
 			$display("READ FILE ERROR");
 			$finish;
 		end
@@ -59,39 +59,39 @@ module SHA256_testbench();
 		rsoc = 1'b0;
 		rrd  = 1'b0;
 
-		#25 rrst = 1'b1;
-		#50 rrst = 1'b0;
+		#3 rrst = 1'b1;
+		#5 rrst = 1'b0;
 
 		for(i = 0; i < msg_blocks; i = i + 1) begin
-			#50 rsoc = 1'b1;
-			#50 rsoc = 1'b0;
+			#5 rsoc = 1'b1;
+			#5 rsoc = 1'b0;
 			
-			#50;
+			#5;
 			if($fscanf(file, "%b\n", rdata) == -1) begin
 				$display("READ FILE ERROR");
 				$finish;
 			end
-			repeat(15) #100 
+			repeat(15) #10 
 				if($fscanf(file, "%b\n", rdata) == -1) begin
 					$display("READ FILE ERROR");
 					$finish;
 				end
-			#100 rdata = 32'bz;
-			repeat(48) #100;
-			#50;
+			#10 rdata = 32'bz;
+			repeat(48) #10;
+			#5;
 		end
 
-		#25 rrd = 1'b1;
+		#3 rrd = 1'b1;
 		for(i = 0; i < 8; i = i + 1) begin
 			if($fscanf(file, "%h\n", hash) == -1) begin
 				$display("READ FILE ERROR");
 				$finish;
 			end
-			if(hash != wdata) begin
+			if(hash != wodata) begin
 				$display("HASH ERROR");
 				$finish;
 			end
-			#100;
+			#10;
 		end
 
 		$display("MSG SUCCESSFULLY HASHED");
@@ -100,6 +100,6 @@ module SHA256_testbench();
 		$finish;
 	end
 
-	always #50 rclk = ~rclk;
+	always #5 rclk = ~rclk;
 
 endmodule
