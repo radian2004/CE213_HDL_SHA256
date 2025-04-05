@@ -35,13 +35,13 @@ module compression(hash, msg, k, clk, rst_n, soc, eoc);
 	wvar 	 uG(Hg, G,    F, 32'h1f83d9ab, clk, rst_n, soc, eoc);
 	wvar 	 uH(Hh, H,    G, 32'h5be0cd19, clk, rst_n, soc, eoc);
 
-	usigma1  u0(us1, E);
+	usigma #(2, 12, 22)  u0(us1, E);
 	choice	 u1(ch, E, F, G);
 	add5	 u2(addMsg, msg, k, us1, ch, H);
 
 	add2	 u3(addE, addMsg, D);
 
-	usigma0	 u4(us0, A);
+	usigma #(6, 11, 25)	 u4(us0, A);
 	majority u5(maj, A, B, C);
 	add3	 u6(addA, us0, maj, addMsg);	
 
