@@ -11,16 +11,20 @@
 *  to the input signal 'in'.
 */
 
-module lsigma0(out, in);
+module lsigma(out, in);
 
+	parameter SHIFT_BITS  	= 1;
+	parameter ROTATE_BITS_0 = 1;
+	parameter ROTATE_BITS_1 = 1;
+	
 	input  [31:0] in;
 	output [31:0] out;
 
 	wire [31:0] net [2:0];	//!< 3x 32-bits words
 
-	shr #(3)  u0(net[0], in);
-	ror #(7)  u1(net[1], in);
-	ror #(18) u2(net[2], in);
+	assign net[0] = in >> SHIFT_BITS;
+	ror #(ROTATE_BITS_0) u1(net[1], in);
+	ror #(ROTATE_BITS_0) u2(net[2], in);
 
 	assign out = net[0] ^ net[1] ^ net[2];
 
