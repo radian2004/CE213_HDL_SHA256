@@ -49,7 +49,8 @@ module expansion(out, in, clk, sel);
 
 	lsigma #(3,  7,  18) u0(lsigma0_out, a01);
 	lsigma #(10, 17, 19) u1(lsigma1_out, a14);
-	add4	u2(add_out, a00, lsigma0_out, a09, lsigma1_out);
+
+	assign add_out = a00 + lsigma0_out + a09 + lsigma1_out;
 
 	assign mux_out = (sel) ? add_out : in;
 	assign out = mux_out;

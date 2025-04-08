@@ -16,6 +16,15 @@
 
 module compression(hash, msg, k, clk, rst_n, soc, eoc);
 
+	localparam Ha_0 = 32'h6a09e667;
+	localparam Hb_0 = 32'hbb67ae85;
+	localparam Hc_0 = 32'h3c6ef372;
+	localparam Hd_0 = 32'ha54ff53a;
+	localparam He_0 = 32'h510e527f;
+	localparam Hf_0 = 32'h9b05688c;
+	localparam Hg_0 = 32'h1f83d9ab;
+	localparam Hh_0 = 32'h5be0cd19;
+
 	input  clk, rst_n, soc, eoc;
 	input  [31:0]  msg, k;
 	output [255:0] hash;
@@ -25,25 +34,27 @@ module compression(hash, msg, k, clk, rst_n, soc, eoc);
 	
 	wire [31:0] addMsg, addE, addA;
 	wire [31:0] us0, us1, maj, ch;
-
-	wvar 	 uA(Ha, A, addA, 32'h6a09e667, clk, rst_n, soc, eoc);
-	wvar 	 uB(Hb, B,    A, 32'hbb67ae85, clk, rst_n, soc, eoc);
-	wvar 	 uC(Hc, C,    B, 32'h3c6ef372, clk, rst_n, soc, eoc);
-	wvar 	 uD(Hd, D,    C, 32'ha54ff53a, clk, rst_n, soc, eoc);
-	wvar 	 uE(He, E, addE, 32'h510e527f, clk, rst_n, soc, eoc);
-	wvar 	 uF(Hf, F,    E, 32'h9b05688c, clk, rst_n, soc, eoc);
-	wvar 	 uG(Hg, G,    F, 32'h1f83d9ab, clk, rst_n, soc, eoc);
-	wvar 	 uH(Hh, H,    G, 32'h5be0cd19, clk, rst_n, soc, eoc);
+	
+	wvar 	 uA(Ha, A, addA, Ha_0, clk, rst_n, soc, eoc);
+	wvar 	 uB(Hb, B,    A, Hb_0, clk, rst_n, soc, eoc);
+	wvar 	 uC(Hc, C,    B, Hc_0, clk, rst_n, soc, eoc);
+	wvar 	 uD(Hd, D,    C, Hd_0, clk, rst_n, soc, eoc);
+	wvar 	 uE(He, E, addE, He_0, clk, rst_n, soc, eoc);
+	wvar 	 uF(Hf, F,    E, Hf_0, clk, rst_n, soc, eoc);
+	wvar 	 uG(Hg, G,    F, Hg_0, clk, rst_n, soc, eoc);
+	wvar 	 uH(Hh, H,    G, Hh_0, clk, rst_n, soc, eoc);
 
 	usigma #(2, 12, 22)  u0(us1, E);
 	choice	 u1(ch, E, F, G);
-	add5	 u2(addMsg, msg, k, us1, ch, H);
 
-	add2	 u3(addE, addMsg, D);
+	assign addMsg = msg + k + us1 + ch + H;
+
+	assign addE = addMsg + D;
 
 	usigma #(6, 11, 25)	 u4(us0, A);
 	majority u5(maj, A, B, C);
-	add3	 u6(addA, us0, maj, addMsg);	
+
+	assign addA = us0 + maj + addMsg;	
 
 	assign hash = {Ha, Hb, Hc, Hd, He, Hf, Hg, Hh};
 
