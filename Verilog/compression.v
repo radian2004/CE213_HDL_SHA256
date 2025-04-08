@@ -48,16 +48,13 @@ module compression(hash, msg, k, clk, rst_n, soc, eoc);
 	choice	 u1(ch, E, F, G);
 
 	assign addMsg = msg + k + us1 + ch + H;
-	// add5	 u2(addMsg, msg, k, us1, ch, H);
 
 	assign addE = addMsg + D;
-	// add2	 u3(addE, addMsg, D);
 
 	usigma #(6, 11, 25)	 u4(us0, A);
 	majority u5(maj, A, B, C);
 
-	assign addA = us0 + maj + addMsg;
-	// add3	 u6(addA, us0, maj, addMsg);	
+	assign addA = us0 + maj + addMsg;	
 
 	assign hash = {Ha, Hb, Hc, Hd, He, Hf, Hg, Hh};
 
