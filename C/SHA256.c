@@ -274,6 +274,7 @@ int main()
       SHA256(msgBlock[i], hash);
 
    // Output
+   printf("SHA256 Hash: ");
    for (i = 0; i < 8; i++)
       printf("%08x", hash[i]);
 }
